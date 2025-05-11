@@ -34,6 +34,7 @@ static long my_unlocked_ioctl(struct file *f, unsigned int cmd, unsigned long ar
 {
 	int size;
 	struct data d;
+	struct data *p;
 	switch(cmd) {
 	case SET_SIZE_OF_QUEUE:
 		if(copy_from_user(&size, (int *)arg, sizeof(int))) {
@@ -64,6 +65,25 @@ static long my_unlocked_ioctl(struct file *f, unsigned int cmd, unsigned long ar
 		d.data = kbuf;
 		queue_push(d);
 		pr_info("circular_chrdev: data pushed: %s\n", q->items[q->rear].data);
+		break;
+
+	case POP_DATA:
+		p = queue_pop();
+		if(!p) {
+			pr_err("circular_chrdev: Issue in popping data\n");
+			return -EFAULT;
+		}
+
+		if(copy_from_user(&d, (struct data *)arg, sizeof(struct data))) {
+				pr_err("circular_chrdev: Error copying struct from user\n");
+				return -EFAULT;
+		}
+
+		if(copy_to_user(d.data, p->data, sizeof(d.len))) {
+			pr_err("circular_chrdev: Error copying struct to user\n");
+			return -EFAULT;
+		}
+
 		break;
 
 	default:

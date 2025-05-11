@@ -75,26 +75,29 @@ void queue_push(struct data d)
 	queue_display();
 }
 
-void queue_pop(void)
+struct data *queue_pop(void)
 {
 	if(!q) {
 		pr_info("queue: queue is not initialized yet\n");
-		return;
+		return NULL;
 	}
 
 	if(q->front == -1 && q->rear == -1) {
 		pr_err("queue: queue is empty\n");
-		return;
+		return NULL;
 	}
+
+	struct data *d = &q->items[q->front];
 
 	pr_info("queue: data popped: %s\n", q->items[q->front].data);
 
 	if(q->front == q->rear) {
 		q->front = q->rear = -1;
-		return;
+		return d;
 	}
 
 	q->front = (q->front + 1) % q->size;
+	return d;
 }
 
 void queue_display(void)

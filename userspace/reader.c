@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -14,8 +15,8 @@ struct data {
 int main(void) {
     int fd = open(DRIVER_NAME, O_RDWR);
     struct data *d = malloc(sizeof(struct data));
-    d->data = 3;
-    d->data = malloc(3);
+    d->length = 4;
+    d->data = malloc(4);
     int ret = ioctl(fd, POP_DATA, d);
     printf("%s\n", d->data);
     close(fd);

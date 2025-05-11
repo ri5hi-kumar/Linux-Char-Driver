@@ -3,6 +3,7 @@
 
 #define SET_SIZE_OF_QUEUE _IOW ('a', 'a', int *)
 #define PUSH_DATA _IOW ('a', 'b', struct data *)
+#define POP_DATA _IOR ('a', 'c', struct data *)
 
 struct data {
 	int len;
@@ -21,7 +22,7 @@ extern struct queue *q;
 void queue_destroy(void);
 void queue_initialize(int);
 void queue_push(struct data);
-void queue_pop(void);
+struct data *queue_pop(void);
 void queue_display(void);
 
 #endif
