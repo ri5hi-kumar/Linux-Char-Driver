@@ -33,15 +33,37 @@ static int my_release(struct inode *inode, struct file *f)
 static long my_unlocked_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 {
 	int size;
+	struct data d;
 	switch(cmd) {
 	case SET_SIZE_OF_QUEUE:
 		if(copy_from_user(&size, (int *)arg, sizeof(int))) {
-				pr_err("circular_chrdev: Error copying from user\n");
+				pr_err("circular_chrdev: Error copying size from user\n");
 				return -EFAULT;
 		}
 		queue_initialize(size);
+		if(!q) {
+			pr_err("circular_chrdev: error initializing queue\n");
+			return -EFAULT;
+		}
 
 		pr_info("circular_chrdev: queue size set: %d\n", q->size);
+		break;
+
+	case PUSH_DATA:
+		if(copy_from_user(&d, (struct data *)arg, sizeof(struct data))) {
+				pr_err("circular_chrdev: Error copying struct from user\n");
+				return -EFAULT;
+		}
+
+		char *kbuf = (char *)kmalloc(d.len * sizeof(char), GFP_KERNEL);
+		if(copy_from_user(kbuf, ((struct data *)arg)->data, sizeof(d.len))) {
+				pr_err("circular_chrdev: Error copying struct from user\n");
+				return -EFAULT;
+		}
+
+		d.data = kbuf;
+		queue_push(d);
+		pr_info("circular_chrdev: data pushed: %s\n", q->items[q->rear].data);
 		break;
 
 	default:
@@ -60,7 +82,6 @@ static struct file_operations fops = {
 
 static int __init my_init(void)
 {
-	queue_initialize(0);
 	major = register_chrdev(major, "circular_chrdev", &fops);
 	if(major < 0) {
 		pr_err("circular_chrdev: Unable to get major number\n");

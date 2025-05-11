@@ -8,7 +8,7 @@
 
 int main(void) {
     int fd = open(DRIVER_NAME, O_RDWR);
-    int size = 100;
+    int size = 5;
     int ret = ioctl(fd, SET_SIZE_OF_QUEUE, & size);
     close(fd);
     return ret;

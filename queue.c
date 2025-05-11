@@ -10,6 +10,15 @@ void queue_destroy(void)
 		return;
 	}
 
+	if(!(q->front == -1 && q->rear == -1)) {
+		int front = q->front;
+		int rear = q->rear;
+		while(rear >= front) {
+			pr_info("queue: distroying: %s\n", q->items[rear].data);
+			rear--;
+		}
+	}
+
 	kfree(q->items);
 	q->items = NULL;
 	kfree(q);
@@ -24,6 +33,8 @@ void queue_initialize(int size)
 		pr_err("queue: error, size is negative\n");
 		return;
 	}
+
+	queue_destroy();
 
 	q = (struct queue *)kmalloc(sizeof(struct queue), GFP_KERNEL);
 	if(!q) {
@@ -61,6 +72,7 @@ void queue_push(struct data d)
 	}
 
 	pr_info("queue: data pushed: %s\n", q->items[q->rear].data);
+	queue_display();
 }
 
 void queue_pop(void)

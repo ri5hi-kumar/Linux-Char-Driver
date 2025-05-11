@@ -2,6 +2,7 @@
 #define COMMON_H
 
 #define SET_SIZE_OF_QUEUE _IOW ('a', 'a', int *)
+#define PUSH_DATA _IOW ('a', 'b', struct data *)
 
 struct data {
 	int len;
