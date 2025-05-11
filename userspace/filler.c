@@ -19,9 +19,9 @@ int main(void) {
     d->length = 4;
     d->data = malloc(4);
     memcpy(d->data, "xyz", 4);
-    int ret = ioctl(fd, PUSH_DATA, d);
+    int ret0 = ioctl(fd, PUSH_DATA, d);
     close(fd);
     free(d->data);
     free(d);
-    return ret;
+    return 0;
 }

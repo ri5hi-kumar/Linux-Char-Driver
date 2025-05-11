@@ -48,6 +48,7 @@ static long my_unlocked_ioctl(struct file *f, unsigned int cmd, unsigned long ar
 		}
 
 		pr_info("circular_chrdev: queue size set: %d\n", q->size);
+		queue_display();
 		break;
 
 	case PUSH_DATA:
@@ -57,14 +58,23 @@ static long my_unlocked_ioctl(struct file *f, unsigned int cmd, unsigned long ar
 		}
 
 		char *kbuf = (char *)kmalloc(d.len * sizeof(char), GFP_KERNEL);
-		if(copy_from_user(kbuf, ((struct data *)arg)->data, sizeof(d.len))) {
+		if(!kbuf) {
+			pr_err("circular_chrdev: Error allocating memory for kbuf\n");
+			return -EFAULT;
+		}
+
+		if(copy_from_user(kbuf, ((struct data *)arg)->data, d.len)) {
 				pr_err("circular_chrdev: Error copying struct from user\n");
 				return -EFAULT;
 		}
 
 		d.data = kbuf;
 		queue_push(d);
-		pr_info("circular_chrdev: data pushed: %s\n", q->items[q->rear].data);
+		if(q) {
+			pr_info("circular_chrdev: data pushed: %s\n", q->items[q->rear].data);
+		}
+
+		queue_display();
 		break;
 
 	case POP_DATA:
@@ -79,11 +89,11 @@ static long my_unlocked_ioctl(struct file *f, unsigned int cmd, unsigned long ar
 				return -EFAULT;
 		}
 
-		if(copy_to_user(d.data, p->data, sizeof(d.len))) {
+		if(copy_to_user(d.data, p->data, d.len)) {
 			pr_err("circular_chrdev: Error copying struct to user\n");
 			return -EFAULT;
 		}
-
+		queue_display();
 		break;
 
 	default:

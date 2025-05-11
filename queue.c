@@ -6,7 +6,7 @@
 void queue_destroy(void)
 {
 	if(!q) {
-		pr_err("queue: queue is not initialized yet\n");
+		pr_err("queue: destroy: queue is not initialized yet\n");
 		return;
 	}
 
@@ -15,10 +15,12 @@ void queue_destroy(void)
 		int rear = q->rear;
 		while(rear >= front) {
 			pr_info("queue: distroying: %s\n", q->items[rear].data);
+			kfree(q->items[rear].data);
 			rear--;
 		}
 	}
 
+	q->front = q->rear = -1;
 	kfree(q->items);
 	q->items = NULL;
 	kfree(q);
@@ -55,7 +57,7 @@ void queue_initialize(int size)
 void queue_push(struct data d)
 {
 	if(!q) {
-		pr_err("queue: queue is not initialized yet\n");
+		pr_err("queue: push: queue is not initialized yet\n");
 		return;
 	}
 
@@ -72,13 +74,12 @@ void queue_push(struct data d)
 	}
 
 	pr_info("queue: data pushed: %s\n", q->items[q->rear].data);
-	queue_display();
 }
 
 struct data *queue_pop(void)
 {
 	if(!q) {
-		pr_info("queue: queue is not initialized yet\n");
+		pr_info("queue: pop: queue is not initialized yet\n");
 		return NULL;
 	}
 
@@ -103,7 +104,7 @@ struct data *queue_pop(void)
 void queue_display(void)
 {
 	if(!q) {
-		pr_err("queue: queue is not initialized yet\n");
+		pr_err("queue: display: queue is not initialized yet\n");
 		return;
 	}
 
