@@ -2,6 +2,7 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/kernel.h>
+#include <linux/wait.h>
 
 #include "common.h"
 
@@ -11,6 +12,8 @@ MODULE_DESCRIPTION("Character Device with Circular Queue");
 
 static int major;
 struct queue *q = NULL;
+
+DECLARE_WAIT_QUEUE_HEAD(queue_wait);
 
 static ssize_t my_read(struct file *f, char __user *u, size_t, loff_t *o)
 {
@@ -70,6 +73,7 @@ static long my_unlocked_ioctl(struct file *f, unsigned int cmd, unsigned long ar
 
 		d.data = kbuf;
 		queue_push(d);
+		wake_up_interruptible(&queue_wait);
 		if(q) {
 			pr_info("circular_chrdev: data pushed: %s\n", q->items[q->rear].data);
 		}
@@ -78,6 +82,12 @@ static long my_unlocked_ioctl(struct file *f, unsigned int cmd, unsigned long ar
 		break;
 
 	case POP_DATA:
+		if(q) {
+			if(q->front == -1 && q->rear == -1) {
+				wait_event_interruptible(queue_wait, q->rear != -1);
+			}
+		}
+
 		p = queue_pop();
 		if(!p) {
 			pr_err("circular_chrdev: Issue in popping data\n");
